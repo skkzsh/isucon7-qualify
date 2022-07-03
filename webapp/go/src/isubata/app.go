@@ -382,6 +382,10 @@ func getUsers() map[int64]User {
 		err := db.Select(&usersLocal, "SELECT * FROM user")
 		return usersLocal, err
 	})
+	if err != nil{
+		log.Fatal(err)
+	}
+
 	users := usersIf.([]User)
 	var userMap = make(map[int64]User)
 	for _, user := range users {
