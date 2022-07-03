@@ -18,6 +18,7 @@ bin/bench -remotes=127.0.0.1 -output ~/log/result-$(date +%Y%m%d-%H%M%S).json
 
 # sudo cat /var/log/nginx/access.log | alp json --sort avg -r -m '^/icons/[0-9a-f]*\.png$' | tee ~/log/alp-$(date +%Y%m%d-%H%M%S).log
 sudo cat /var/log/nginx/access.log | alp json --sort avg -r -m '^/icons/[0-9a-f]*\.png$','^/icons/[0-9a-f]*\.jpg$','^/channel/[0-9]*$','^/profile/.*$','^/history/[0-9]*$' | tee ~/log/alp-$(date +%Y%m%d-%H%M%S).log
+# -q --qs-ignore-values
 
 # sudo mysqldumpslow /var/log/mysql/mysql-slow.log | tee ~/log/slow-$(date +%Y%m%d-%H%M%S).log
 # sudo pt-query-digest /var/log/mysql/mysql-slow.log | tee ~/log/pt-query-digest-$(date +%Y%m%d-%H%M%S).log
