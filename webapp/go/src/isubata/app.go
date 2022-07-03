@@ -377,7 +377,8 @@ func jsonifyMessage(m Message, userMap map[int64]User) (map[string]interface{}, 
 
 func getUsers() map[int64]User {
 	var users []User
-	err := db.Select(&users, "SELECT name, display_name, avatar_icon FROM user")
+	//err := db.Select(&users, "SELECT name, display_name, avatar_icon FROM user")
+	err := db.Select(&users, "SELECT * FROM user")
 	if err != nil {
 		log.Fatal(err)
 	}
