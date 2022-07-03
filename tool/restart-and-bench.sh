@@ -2,6 +2,7 @@
 set -euvx
 
 sudo truncate -s 0 -c /var/log/nginx/access.log
+sudo truncate -s 0 -c /var/log/nginx/error.log
 sudo truncate -s 0 -c /var/log/mysql/mysql-slow.log
 # mysqladmin flush-logs
 
