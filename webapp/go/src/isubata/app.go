@@ -691,20 +691,38 @@ func postProfile(c echo.Context) error {
 func getIcon(c echo.Context) error {
 	var name string
 	var data []byte
-	//err := db.QueryRow("SELECT name, data FROM image WHERE name = ?",
-	//	c.Param("file_name")).Scan(&name, &data)
-	//if err == sql.ErrNoRows {
-	//	return echo.ErrNotFound
-	//}
-	//if err != nil {
-	//	return err
-	//}
 
 	name = c.Param("file_name")
 	const dirName = "/home/isucon/isubata/webapp/images/"
-	data, err := ioutil.ReadFile(dirName + name)
-	if err != nil {
-		log.Fatal(err)
+	fullName := dirName + name
+
+	// ファイルがローカルにあればローカルから取得
+	// なければDBから取得し、ローカルに保存
+	if _, err := os.Stat(fullName); err == nil {
+		data, err = ioutil.ReadFile(fullName)
+		if err != nil{
+		  log.Fatal(err)
+	    }
+	} else {
+		err := db.QueryRow("SELECT name, data FROM image WHERE name = ?",
+			c.Param("file_name")).Scan(&name, &data)
+		if err == sql.ErrNoRows {
+			return echo.ErrNotFound
+		}
+		if err != nil {
+			return err
+		}
+
+		f, err := os.Create(name)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
+
+		_, err = f.Write(data)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	mime := ""
