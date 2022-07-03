@@ -19,6 +19,7 @@ import (
 
 	"golang.org/x/sync/singleflight"
 
+	_ "net/http/pprof"
 	//"gopkg.in/DataDog/dd-trace-go.v1/profiler"
 	//echotrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/labstack/echo"
 	//"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
@@ -821,6 +822,9 @@ func tRange(a, b int64) []int64 {
 }
 
 func main() {
+	go func() {
+		log.Fatal(http.ListenAndServe(":6060", nil))
+	}()
 
 	//err := profiler.Start(
 	//	profiler.WithService(DatadogServiceName),
