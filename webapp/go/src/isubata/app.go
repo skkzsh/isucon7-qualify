@@ -410,7 +410,7 @@ func getMessage(c echo.Context) error { // FIXME: 回数
 		return err
 	}
 
-	messages100If, err, _ := sfGroup.Do("messages", func()(interface{}, error) {
+	messages100If, err, _ := sfGroup.Do(fmt.Sprintf("messages_of_channel_%d", chanID), func()(interface{}, error) {
 		msgs100 := []Message{}
 		err := db.Select(&msgs100, "SELECT * FROM message WHERE channel_id = ? ORDER BY id DESC LIMIT 100",
 			chanID)
