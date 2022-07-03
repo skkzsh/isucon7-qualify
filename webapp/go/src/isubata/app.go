@@ -133,7 +133,7 @@ type Message struct {
 
 func queryMessages(chanID, lastID int64) ([]Message, error) {
 	msgs := []Message{}
-	err := db.Select(&msgs, "SELECT * FROM message WHERE id > ? AND channel_id = ? ORDER BY id DESC LIMIT 100", // FIXME: slow
+	err := db.Select(&msgs, "SELECT * FROM message WHERE id > ? AND channel_id = ? ORDER BY id DESC LIMIT 100", // FIXME: slow, 呼出多
 		lastID, chanID)
 	return msgs, err
 }
@@ -410,10 +410,28 @@ func getMessage(c echo.Context) error { // FIXME: 回数
 		return err
 	}
 
-	messages, err := queryMessages(chanID, lastID)
+	messages100If, err, _ := sfGroup.Do("messages", func()(interface{}, error) {
+		msgs100 := []Message{}
+		err := db.Select(&msgs100, "SELECT * FROM message WHERE channel_id = ? ORDER BY id DESC LIMIT 100",
+			chanID)
+		return msgs100, err
+	})
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
+    messages100 := messages100If.([]Message)
+
+	messages := []Message{}
+	for _, msg := range messages100 {
+		if msg.ID > lastID {
+			messages = append(messages, msg)
+		}
+	}
+
+	//messages, err := queryMessages(chanID, lastID)
+	//if err != nil {
+	//	return err
+	//}
 
 	var userMap = getUsers()
 
