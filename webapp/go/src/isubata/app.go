@@ -130,7 +130,7 @@ type Message struct {
 
 func queryMessages(chanID, lastID int64) ([]Message, error) {
 	msgs := []Message{}
-	err := db.Select(&msgs, "SELECT * FROM message WHERE id > ? AND channel_id = ? ORDER BY id DESC LIMIT 100",
+	err := db.Select(&msgs, "SELECT * FROM message WHERE id > ? AND channel_id = ? ORDER BY id DESC LIMIT 100", // FIXME: slow
 		lastID, chanID)
 	return msgs, err
 }
@@ -372,7 +372,7 @@ func jsonifyMessage(m Message) (map[string]interface{}, error) {
 	return r, nil
 }
 
-func getMessage(c echo.Context) error {
+func getMessage(c echo.Context) error { // FIXME: 回数
 	userID := sessUserID(c)
 	if userID == 0 {
 		return c.NoContent(http.StatusForbidden)
@@ -470,7 +470,7 @@ func fetchUnread(c echo.Context) error {
 				chID, lastID)
 		} else {
 			err = db.Get(&cnt,
-				"SELECT COUNT(*) as cnt FROM message WHERE channel_id = ?",
+				"SELECT COUNT(*) as cnt FROM message WHERE channel_id = ?", // FIXME: N+1
 				chID)
 		}
 		if err != nil {
@@ -509,7 +509,7 @@ func getHistory(c echo.Context) error {
 
 	const N = 20
 	var cnt int64
-	err = db.Get(&cnt, "SELECT COUNT(*) as cnt FROM message WHERE channel_id = ?", chID)
+	err = db.Get(&cnt, "SELECT COUNT(*) as cnt FROM message WHERE channel_id = ?", chID) // FIXME: 回数
 	if err != nil {
 		return err
 	}
@@ -523,7 +523,7 @@ func getHistory(c echo.Context) error {
 
 	messages := []Message{}
 	err = db.Select(&messages,
-		"SELECT * FROM message WHERE channel_id = ? ORDER BY id DESC LIMIT ? OFFSET ?",
+		"SELECT * FROM message WHERE channel_id = ? ORDER BY id DESC LIMIT ? OFFSET ?",  // FIXME: slow
 		chID, N, (page-1)*N)
 	if err != nil {
 		return err
@@ -688,7 +688,7 @@ func postProfile(c echo.Context) error {
 	return c.Redirect(http.StatusSeeOther, "/")
 }
 
-func getIcon(c echo.Context) error {
+func getIcon(c echo.Context) error { // FIXME: 回数
 	var name string
 	var data []byte
 
