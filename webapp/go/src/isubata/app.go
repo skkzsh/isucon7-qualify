@@ -372,7 +372,7 @@ func jsonifyMessage(m Message) (map[string]interface{}, error) {
 	return r, nil
 }
 
-func getMessage(c echo.Context) error { // FIXME: slow
+func getMessage(c echo.Context) error {
 	userID := sessUserID(c)
 	if userID == 0 {
 		return c.NoContent(http.StatusForbidden)
@@ -442,7 +442,7 @@ func queryHaveRead(userID, chID int64) (int64, error) {
 	return h.MessageID, nil
 }
 
-func fetchUnread(c echo.Context) error { // FIXME: slow
+func fetchUnread(c echo.Context) error {
 	userID := sessUserID(c)
 	if userID == 0 {
 		return c.NoContent(http.StatusForbidden)
@@ -691,7 +691,7 @@ func postProfile(c echo.Context) error {
 func getIcon(c echo.Context) error {
 	var name string
 	var data []byte
-	err := db.QueryRow("SELECT name, data FROM image WHERE name = ?", // FIXME: slow query 回数
+	err := db.QueryRow("SELECT name, data FROM image WHERE name = ?",
 		c.Param("file_name")).Scan(&name, &data)
 	if err == sql.ErrNoRows {
 		return echo.ErrNotFound
@@ -711,18 +711,6 @@ func getIcon(c echo.Context) error {
 	default:
 		return echo.ErrNotFound
 	}
-
-	f, err := os.Create(name)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-
-	_, err = f.Write(data)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	return c.Blob(http.StatusOK, mime, data)
 }
 
