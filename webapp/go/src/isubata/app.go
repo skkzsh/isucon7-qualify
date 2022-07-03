@@ -468,13 +468,14 @@ func fetchUnread(c echo.Context) error {
 	resp := []map[string]interface{}{}
 
 	var channelCountsIf []ChannelCount
-	channelCountsIf, err, _ = sfGroup.Do("channelCounts", func()([]ChannelCount, error) {
+	channelCountsIf, err, _ = sfGroup.Do("channelCounts", func()(interface{}, error) {
 		var channelCountsLocal []ChannelCount
 		err = db.Select(&channelCountsLocal, "SELECT channel_id, COUNT(*) as cnt FROM message group by channel_id")
 		return channelCountsLocal, err
 	})
+	channelCounts := channelCountsIf.([]ChannelCount)
 	var channelCountMap = make(map[int64]int64)
-	for _, channelCount := range channelCountsIf {
+	for _, channelCount := range channelCounts {
 		channelCountMap[channelCount.ChannelId] = channelCount.Count
 	}
 
