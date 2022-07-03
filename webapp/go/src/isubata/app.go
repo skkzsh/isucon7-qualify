@@ -18,8 +18,8 @@ import (
 	"time"
 
 	//"gopkg.in/DataDog/dd-trace-go.v1/profiler"
-	echotrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/labstack/echo"
-	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
+	//echotrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/labstack/echo"
+	//"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/gorilla/sessions"
@@ -746,13 +746,12 @@ func main() {
 	//	log.Fatal(err)
 	//}
 
-	tracer.Start(
-		tracer.WithService(DatadogServiceName),
-		tracer.WithEnv(DatadogEnv),
-		//tracer.WithRuntimeMetrics(),
-	)
-
-	defer tracer.Stop()
+	//tracer.Start(
+	//	tracer.WithService(DatadogServiceName),
+	//	tracer.WithEnv(DatadogEnv),
+	//	//tracer.WithRuntimeMetrics(),
+	//)
+	//defer tracer.Stop()
 
 	e := echo.New()
 	funcs := template.FuncMap{
@@ -768,7 +767,7 @@ func main() {
 	}))
 	e.Use(middleware.Static("../public"))
 
-	e.Use(echotrace.Middleware(echotrace.WithServiceName(DatadogServiceName)))
+	//e.Use(echotrace.Middleware(echotrace.WithServiceName(DatadogServiceName)))
 
 	e.GET("/initialize", getInitialize)
 	e.GET("/", getIndex)
