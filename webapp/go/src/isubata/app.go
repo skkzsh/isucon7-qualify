@@ -753,6 +753,10 @@ func getIcon(c echo.Context) error { // FIXME: 回数
 	default:
 		return echo.ErrNotFound
 	}
+
+	header := c.Response().Header()
+	header.Set("Cache-Control", "public, max-age=86400")
+
 	return c.Blob(http.StatusOK, mime, data)
 }
 
