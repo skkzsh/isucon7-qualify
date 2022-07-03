@@ -17,7 +17,9 @@ import (
 	"strings"
 	"time"
 
-	"gopkg.in/DataDog/dd-trace-go.v1/profiler"
+	//"gopkg.in/DataDog/dd-trace-go.v1/profiler"
+	echotrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/labstack/echo"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/gorilla/sessions"
@@ -726,23 +728,31 @@ func tRange(a, b int64) []int64 {
 
 func main() {
 
-	err := profiler.Start(
-		profiler.WithService(DatadogServiceName),
-		profiler.WithEnv(DatadogEnv),
-		profiler.WithProfileTypes(
-			profiler.CPUProfile,
-			profiler.HeapProfile,
-			// The profiles below are disabled by default to keep overhead
-			// low, but can be enabled as needed.
+	//err := profiler.Start(
+	//	profiler.WithService(DatadogServiceName),
+	//	profiler.WithEnv(DatadogEnv),
+	//	profiler.WithProfileTypes(
+	//		profiler.CPUProfile,
+	//		profiler.HeapProfile,
+	//		// The profiles below are disabled by default to keep overhead
+	//		// low, but can be enabled as needed.
+	//
+	//		// profiler.BlockProfile,
+	//		// profiler.MutexProfile,
+	//		// profiler.GoroutineProfile,
+	//	),
+	//)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 
-			// profiler.BlockProfile,
-			// profiler.MutexProfile,
-			// profiler.GoroutineProfile,
-		),
+	tracer.Start(
+		tracer.WithService(DatadogServiceName),
+		tracer.WithEnv(DatadogEnv),
+		//tracer.WithRuntimeMetrics(),
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
+
+	defer tracer.Stop()
 
 	e := echo.New()
 	funcs := template.FuncMap{
@@ -757,6 +767,8 @@ func main() {
 		Format: "request:\"${method} ${uri}\" status:${status} latency:${latency} (${latency_human}) bytes:${bytes_out}\n",
 	}))
 	e.Use(middleware.Static("../public"))
+
+	e.Use(echotrace.Middleware(echotrace.WithServiceName(DatadogServiceName)))
 
 	e.GET("/initialize", getInitialize)
 	e.GET("/", getIndex)
