@@ -691,13 +691,20 @@ func postProfile(c echo.Context) error {
 func getIcon(c echo.Context) error {
 	var name string
 	var data []byte
-	err := db.QueryRow("SELECT name, data FROM image WHERE name = ?",
-		c.Param("file_name")).Scan(&name, &data)
-	if err == sql.ErrNoRows {
-		return echo.ErrNotFound
-	}
+	//err := db.QueryRow("SELECT name, data FROM image WHERE name = ?",
+	//	c.Param("file_name")).Scan(&name, &data)
+	//if err == sql.ErrNoRows {
+	//	return echo.ErrNotFound
+	//}
+	//if err != nil {
+	//	return err
+	//}
+
+	name = c.Param("file_name")
+	const dirName = "/home/isucon/isubata/webapp/images/"
+	data, err := ioutil.ReadFile(dirName + name)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 	mime := ""
