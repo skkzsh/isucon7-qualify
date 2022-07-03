@@ -705,11 +705,6 @@ func postProfile(c echo.Context) error {
 	return c.Redirect(http.StatusSeeOther, "/")
 }
 
-type ImageData struct {
-	Name string `db:"name"`
-	Data []byte `db:"data"`
-}
-
 func getIcon(c echo.Context) error { // FIXME: 回数
 	var name string
 	var data []byte
@@ -726,46 +721,25 @@ func getIcon(c echo.Context) error { // FIXME: 回数
 		  log.Fatal(err)
 	    }
 	} else {
-		//err := db.QueryRow("SELECT name, data FROM image WHERE name = ?",
-		//	c.Param("file_name")).Scan(&name, &data)
-		//if err == sql.ErrNoRows {
-		//	return echo.ErrNotFound
-		//}
-		//if err != nil {
-		//	return err
-		//}
-		//
-		//f, err := os.Create(name)
-		//if err != nil {
-		//	log.Fatal(err)
-		//}
-		//defer f.Close()
-		//
-		//_, err = f.Write(data)
-		//if err != nil {
-		//	log.Fatal(err)
-		//}
-
-		var imageDatas []ImageData
-		err := db.Select(&imageDatas, "SELECT name, data FROM image")
+		err := db.QueryRow("SELECT name, data FROM image WHERE name = ?",
+			c.Param("file_name")).Scan(&name, &data)
+		if err == sql.ErrNoRows {
+			return echo.ErrNotFound
+		}
 		if err != nil {
 			return err
 		}
 
-		for _, imageData := range imageDatas {
-			f, err := os.Create(dirName + imageData.Name)
-			if err != nil {
-			  log.Fatal(err)
-		    }
-			defer f.Close()
-
-			_, err = f.Write(imageData.Data)
-			if err != nil {
-			  log.Fatal(err)
-		    }
+		f, err := os.Create(name)
+		if err != nil {
+			log.Fatal(err)
 		}
+		defer f.Close()
 
-		panic("終了")
+		_, err = f.Write(data)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	mime := ""
