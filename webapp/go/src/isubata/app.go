@@ -17,6 +17,8 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/sync/singleflight"
+
 	//"gopkg.in/DataDog/dd-trace-go.v1/profiler"
 	//echotrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/labstack/echo"
 	//"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
@@ -448,6 +450,8 @@ type ChannelCount struct {
 	Count     int64 `db:"cnt"`
 }
 
+var sfGroup singleflight.Group
+
 func fetchUnread(c echo.Context) error {
 	userID := sessUserID(c)
 	if userID == 0 {
@@ -463,13 +467,14 @@ func fetchUnread(c echo.Context) error {
 
 	resp := []map[string]interface{}{}
 
-	var channelCounts []ChannelCount
-	err = db.Select(&channelCounts, "SELECT channel_id, COUNT(*) as cnt FROM message group by channel_id")
-	if err != nil {
-		return err
-	}
+	var channelCountsIf []ChannelCount
+	channelCountsIf, err, _ = sfGroup.Do("channelCounts", func()(interface{}, error) {
+		var channelCountsLocal []ChannelCount
+		err = db.Select(&channelCountsLocal, "SELECT channel_id, COUNT(*) as cnt FROM message group by channel_id")
+		return channelCountsLocal, err
+	})
 	var channelCountMap = make(map[int64]int64)
-	for _, channelCount := range channelCounts {
+	for _, channelCount := range channelCountsIf {
 		channelCountMap[channelCount.ChannelId] = channelCount.Count
 	}
 
