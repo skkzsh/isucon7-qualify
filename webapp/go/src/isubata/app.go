@@ -358,13 +358,14 @@ func postMessage(c echo.Context) error {
 	return c.NoContent(204)
 }
 
-func jsonifyMessage(m Message) (map[string]interface{}, error) {
-	u := User{}
-	err := db.Get(&u, "SELECT name, display_name, avatar_icon FROM user WHERE id = ?", // FIXME: 回数
-		m.UserID)
-	if err != nil {
-		return nil, err
-	}
+func jsonifyMessage(m Message, userMap map[int64]User) (map[string]interface{}, error) {
+	//u := User{}
+	//err := db.Get(&u, "SELECT name, display_name, avatar_icon FROM user WHERE id = ?", // FIXME: 回数
+	//	m.UserID)
+	//if err != nil {
+	//	return nil, err
+	//}
+	u := userMap[m.UserID]
 
 	r := make(map[string]interface{})
 	r["id"] = m.ID
@@ -372,6 +373,19 @@ func jsonifyMessage(m Message) (map[string]interface{}, error) {
 	r["date"] = m.CreatedAt.Format("2006/01/02 15:04:05")
 	r["content"] = m.Content
 	return r, nil
+}
+
+func getUsers() map[int64]User {
+	var users []User
+	err := db.Select(&users, "SELECT name, display_name, avatar_icon FROM user")
+	if err != nil {
+		log.Fatal(err)
+	}
+	var userMap = make(map[int64]User)
+	for _, user := range users {
+		userMap[user.ID] = user
+	}
+	return userMap
 }
 
 func getMessage(c echo.Context) error { // FIXME: 回数
@@ -394,10 +408,12 @@ func getMessage(c echo.Context) error { // FIXME: 回数
 		return err
 	}
 
+	var userMap = getUsers()
+
 	response := make([]map[string]interface{}, 0)
 	for i := len(messages) - 1; i >= 0; i-- {
 		m := messages[i]
-		r, err := jsonifyMessage(m)
+		r, err := jsonifyMessage(m, userMap)
 		if err != nil {
 			return err
 		}
@@ -551,9 +567,11 @@ func getHistory(c echo.Context) error {
 		return err
 	}
 
+	var userMap = getUsers()
+
 	mjson := make([]map[string]interface{}, 0)
 	for i := len(messages) - 1; i >= 0; i-- {
-		r, err := jsonifyMessage(messages[i])
+		r, err := jsonifyMessage(messages[i], userMap)
 		if err != nil {
 			return err
 		}
