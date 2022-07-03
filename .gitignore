@@ -10,3 +10,6 @@ webapp/perl/local
 
 alp-*.log
 result-*.json
+
+webapp/**/*.png
+webapp/**/*.jpg
