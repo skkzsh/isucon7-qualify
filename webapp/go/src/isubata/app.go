@@ -360,7 +360,7 @@ func postMessage(c echo.Context) error {
 
 func jsonifyMessage(m Message) (map[string]interface{}, error) {
 	u := User{}
-	err := db.Get(&u, "SELECT name, display_name, avatar_icon FROM user WHERE id = ?",
+	err := db.Get(&u, "SELECT name, display_name, avatar_icon FROM user WHERE id = ?", // FIXME: 回数
 		m.UserID)
 	if err != nil {
 		return nil, err
@@ -433,7 +433,7 @@ func queryHaveRead(userID, chID int64) (int64, error) {
 	}
 	h := HaveRead{}
 
-	err := db.Get(&h, "SELECT * FROM haveread WHERE user_id = ? AND channel_id = ?",
+	err := db.Get(&h, "SELECT * FROM haveread WHERE user_id = ? AND channel_id = ?", // FIXME: 回数
 		userID, chID)
 
 	if err == sql.ErrNoRows {
