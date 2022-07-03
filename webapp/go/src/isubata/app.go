@@ -759,7 +759,7 @@ func getIcon(c echo.Context) error { // FIXME: 回数
 	var data []byte
 
 	name = c.Param("file_name")
-	const dirName = "/home/isucon/isubata/webapp/images/"
+	const dirName = "/home/isucon/isubata/webapp/icons/"
 	fullName := dirName + name
 
 	// ファイルがローカルにあればローカルから取得
