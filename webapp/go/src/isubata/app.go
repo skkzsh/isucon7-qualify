@@ -730,7 +730,7 @@ func getIcon(c echo.Context) error { // FIXME: 回数
 			return err
 		}
 
-		f, err := os.Create(name)
+		f, err := os.Create(fullName)
 		if err != nil {
 			log.Fatal(err)
 		}
