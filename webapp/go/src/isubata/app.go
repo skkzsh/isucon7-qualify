@@ -467,6 +467,14 @@ type ChannelCount struct {
 	Count     int64 `db:"cnt"`
 }
 
+type HaveRead struct {
+	//UserID    int64     `db:"user_id"`
+	ChannelID int64     `db:"channel_id"`
+	MessageID int64     `db:"message_id"`
+	//UpdatedAt time.Time `db:"updated_at"`
+	//CreatedAt time.Time `db:"created_at"`
+}
+
 var sfGroup singleflight.Group
 
 func fetchUnread(c echo.Context) error {
@@ -495,11 +503,22 @@ func fetchUnread(c echo.Context) error {
 		channelCountMap[channelCount.ChannelId] = channelCount.Count
 	}
 
+	var haveReads []HaveRead
+	err = db.Select(&haveReads, "SELECT message_id, channel_id FROM haveread WHERE user_id = ?", userID)
+	if err != nil {
+		return err
+	}
+	var haveReadMap = make(map[int64]int64)
+	for _, haveRead := range haveReads {
+		haveReadMap[haveRead.ChannelID] = haveRead.MessageID
+	}
+
 	for _, chID := range channels {
-		lastID, err := queryHaveRead(userID, chID)
-		if err != nil {
-			return err
-		}
+		lastID := haveReadMap[chID]
+		//lastID, err := queryHaveRead(userID, chID)
+		//if err != nil {
+		//	return err
+		//}
 
 		var cnt int64
 		if lastID > 0 {
