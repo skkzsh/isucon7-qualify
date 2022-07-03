@@ -442,6 +442,12 @@ func queryHaveRead(userID, chID int64) (int64, error) {
 	return h.MessageID, nil
 }
 
+
+type ChannelCount struct {
+	ChannelId int64 `db:"channel_id"`
+	Count     int64 `db:"cnt"`
+}
+
 func fetchUnread(c echo.Context) error {
 	userID := sessUserID(c)
 	if userID == 0 {
@@ -457,6 +463,16 @@ func fetchUnread(c echo.Context) error {
 
 	resp := []map[string]interface{}{}
 
+	var channelCounts []ChannelCount
+	err = db.Select(&channelCounts, "SELECT channel_id, COUNT(*) as cnt FROM message group by channel_id")
+	if err != nil {
+		return err
+	}
+	var channelCountMap = make(map[int64]int64)
+	for _, channelCount := range channelCounts {
+		channelCountMap[channelCount.ChannelId] = channelCount.Count
+	}
+
 	for _, chID := range channels {
 		lastID, err := queryHaveRead(userID, chID)
 		if err != nil {
@@ -469,9 +485,10 @@ func fetchUnread(c echo.Context) error {
 				"SELECT COUNT(*) as cnt FROM message WHERE channel_id = ? AND ? < id",
 				chID, lastID)
 		} else {
-			err = db.Get(&cnt,
-				"SELECT COUNT(*) as cnt FROM message WHERE channel_id = ?", // FIXME: N+1
-				chID)
+			//err = db.Get(&cnt,
+			//	"SELECT COUNT(*) as cnt FROM message WHERE channel_id = ?", // FIXME: N+1
+			//	chID)
+			cnt = channelCountMap[chID]
 		}
 		if err != nil {
 			return err
