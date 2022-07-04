@@ -133,7 +133,7 @@ type Message struct {
 
 func queryMessages(chanID, lastID int64) ([]Message, error) {
 	msgs := []Message{}
-	err := db.Select(&msgs, "SELECT * FROM message WHERE id > ? AND channel_id = ? ORDER BY id DESC LIMIT 100", // FIXME: slow, 呼出多
+	err := db.Select(&msgs, "SELECT * FROM message WHERE id > ? AND channel_id = ? ORDER BY id DESC LIMIT 100",
 		lastID, chanID)
 	return msgs, err
 }
@@ -361,7 +361,7 @@ func postMessage(c echo.Context) error {
 
 func jsonifyMessage(m Message, userMap map[int64]User) (map[string]interface{}, error) {
 	//u := User{}
-	//err := db.Get(&u, "SELECT name, display_name, avatar_icon FROM user WHERE id = ?", // FIXME: 回数
+	//err := db.Get(&u, "SELECT name, display_name, avatar_icon FROM user WHERE id = ?",
 	//	m.UserID)
 	//if err != nil {
 	//	return nil, err
@@ -412,7 +412,7 @@ func getMessage(c echo.Context) error { // FIXME: 回数
 
 	messages100If, err, _ := sfGroup.Do(fmt.Sprintf("messages_of_channel_%d", chanID), func()(interface{}, error) {
 		msgs100 := []Message{}
-		err := db.Select(&msgs100, "SELECT * FROM message WHERE channel_id = ? ORDER BY id DESC LIMIT 100",
+		err := db.Select(&msgs100, "SELECT * FROM message WHERE channel_id = ? ORDER BY id DESC LIMIT 100", /// FIXME: 呼出多
 			chanID)
 		return msgs100, err
 	})
@@ -474,7 +474,7 @@ func queryHaveRead(userID, chID int64) (int64, error) {
 	}
 	h := HaveRead{}
 
-	err := db.Get(&h, "SELECT * FROM haveread WHERE user_id = ? AND channel_id = ?", // FIXME: 回数
+	err := db.Get(&h, "SELECT * FROM haveread WHERE user_id = ? AND channel_id = ?",
 		userID, chID)
 
 	if err == sql.ErrNoRows {
@@ -551,7 +551,7 @@ func fetchUnread(c echo.Context) error {
 				chID, lastID)
 		} else {
 			//err = db.Get(&cnt,
-			//	"SELECT COUNT(*) as cnt FROM message WHERE channel_id = ?", // FIXME: N+1
+			//	"SELECT COUNT(*) as cnt FROM message WHERE channel_id = ?",
 			//	chID)
 			cnt = channelCountMap[chID]
 		}
