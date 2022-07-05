@@ -421,7 +421,7 @@ func getMessage(c echo.Context) error { // FIXME: 回数
 	}
     messages100 := messages100If.([]Message)
 
-	messages := []Message{}
+	messages := make([]Message, 0, 100)
 	for _, msg := range messages100 {
 		if msg.ID > lastID {
 			messages = append(messages, msg)
@@ -435,7 +435,7 @@ func getMessage(c echo.Context) error { // FIXME: 回数
 
 	var userMap = getUsers()
 
-	response := make([]map[string]interface{}, 0)
+	response := make([]map[string]interface{}, 0, len(messages))
 	for i := len(messages) - 1; i >= 0; i-- {
 		m := messages[i]
 		r, err := jsonifyMessage(m, userMap)
@@ -514,7 +514,7 @@ func fetchUnread(c echo.Context) error {
 		return err
 	}
 
-	resp := []map[string]interface{}{}
+	resp := make([]map[string]interface{}, 0, len(channels))
 
 	channelCountsIf, err, _ := sfGroup.Do("channelCounts", func()(interface{}, error) {
 		var channelCountsLocal []ChannelCount
@@ -613,7 +613,7 @@ func getHistory(c echo.Context) error {
 
 	var userMap = getUsers()
 
-	mjson := make([]map[string]interface{}, 0)
+	mjson := make([]map[string]interface{}, 0, len(messages))
 	for i := len(messages) - 1; i >= 0; i-- {
 		r, err := jsonifyMessage(messages[i], userMap)
 		if err != nil {
